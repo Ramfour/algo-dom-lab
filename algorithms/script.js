@@ -130,6 +130,18 @@ function findMax(arr, compare) {
     return flag;
   }
 
+  function sum(arr){
+    /*
+    const result = 0;
+    for (let i = 0, l = arr.length - 1; i < l; i++){
+      result += arr[i]
+    }
+    return result
+    Один из способов
+    */
+    return arr.reduce((acc, number) => acc + number, 0)
+  }
+
 // DOM-ФУНКЦИИ (создание элементов)
 function createArrayCard(name, arr, parentContainer) { // функция создания карточки массива
   const card = document.createElement('div');
@@ -229,71 +241,71 @@ function createResultObject(data, callback) { // функция создает �
 
 
 
-function renderCards(data) { // функция рендерит карточки с массивами
+function renderCards(data, callback) { // функция рендерит карточки с массивами
   container.innerHTML = '';
   for (const [name, arr] of Object.entries(data)) {
-    createArrayCard(name, arr, container);
+    callback(name, arr, container);
   }
 }
 
 function handleAlgorithmChange(selectedAlgorithm) { // функция обрабатывает выбор алгоритма
   switch (selectedAlgorithm) {
     case 'Выберите алгоритм':
-      renderCards(testData);
+      renderCards(testData, createArrayCard);
       break;
     case 'findMin':
       const minResult = createResultObject(testData, (arr) => findMin(arr, compareAsc).value);
-      renderCards(minResult);
+      renderCards(minResult, createArrayCard);
       break;
     case 'findMax':
       const maxResult = createResultObject(testData, (arr) => findMax(arr, compareAsc).value);
-      renderCards(maxResult);
+      renderCards(maxResult, createArrayCard);
       break;
     case 'findMinIndex':
       const minIndexResult = createResultObject(testData, (arr) => findMin(arr, compareAsc).index);
-      renderCards(minIndexResult);
+      renderCards(minIndexResult, createArrayCard);
       break;
     case 'findMaxIndex':
       const maxIndexResult = createResultObject(testData, (arr) => findMax(arr, compareAsc).index);
-      renderCards(maxIndexResult);
+      renderCards(maxIndexResult, renderCards);
       break;
     case 'swap':
-      renderCards(testData); // сначала рендерим карточки с массивами
+      renderCards(testData, createArrayCard); // сначала рендерим карточки с массивами
       // затем делаем видимыми input элементы через forEach и функцию inputNowVisible, 
       // обращаясь ко всем элементам с классом .input-container
       document.querySelectorAll('.input-container').forEach(el => inputNowVisible(el)); 
       break;
     case 'isSortedAsc':
-      renderCards(testData);
+      renderCards(testData, createArrayCard);
       document.querySelectorAll('.is-sorted-container').forEach(el => inputNowVisible(el));
       break;
     case 'isSortedDesc':
       const isSortedDescResult = createResultObject(testData, isSortedAsc);
-      renderCards(isSortedDescResult);
+      renderCards(isSortedDescResult, createArrayCard);
       document.querySelectorAll('.is-sorted-container').forEach(el => inputNowVisible(el));
       break;
     case 'sum':
       const sumResult = createResultObject(testData, sum);
-      renderCards(sumResult);
+      renderCards(sumResult, createArrayCard);
       break;
     case 'average':
       const averageResult = createResultObject(testData, average);
-      renderCards(averageResult);
+      renderCards(averageResult, createArrayCard);
       break;
     case 'reverseArray':
       const reverseArrayResult = createResultObject(testData, reverseArray);
-      renderCards(reverseArrayResult);
+      renderCards(reverseArrayResult, createArrayCard);
       break;
     case 'Bubble Sort':
       const bubbleResult = createResultObject(testData, bubbleSort);
-      renderCards(bubbleResult);
+      renderCards(bubbleResult, createArrayCard);
       break;
     case 'Selection Sort':
       // TODO
       break;
     case 'Insertion Sort':
       const insertionResult = createResultObject(testData, insertionSort);
-      renderCards(insertionResult);
+      renderCards(insertionResult, createArrayCard);
       break;
   }
 }
