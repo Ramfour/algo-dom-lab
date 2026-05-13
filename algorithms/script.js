@@ -130,6 +130,20 @@ function findMax(arr, compare) {
     return flag;
   }
 
+  function isSortedDesc(arr, compare){
+    if (arr.length == 0) return 'Массив пуст';
+    let flag = true;
+    for (let i = 0, l = arr.length - 1; i < l; i++){
+      if (compare(arr[i], arr[i + 1]) || arr[i] == arr[i + 1]) {
+        flag = true
+      }else {
+        flag = false;
+        break;
+      }
+    }
+    return flag;
+  }
+
   function sum(arr){
     /*
     const result = 0;
@@ -140,6 +154,27 @@ function findMax(arr, compare) {
     Один из способов
     */
     return arr.reduce((acc, number) => acc + number, 0)
+  }
+
+  function average (arr){
+    if (arr.length === 0) return 0;
+    // Тут можно воспользоваться сделанной заранее функцией.
+    // # В это раз callback не передаем, так как он сломает логику createResultObject
+    return sum(arr) / arr.length; 
+    /*
+    Если бы остутствовал sum:
+    let sum = arr.reduce((acc, number) => acc + number, 0);
+    return Math.round( sum / arr.length * 100 ) / 100
+    */
+  }
+
+  function reverseArray (arr){
+    if (arr.length <= 1) return arr;
+    const result = [...arr];
+    for (let i = 0, l = result.length - 1; i < l ; i++, l--){
+      [result[i], result[l]] = [result[l], result[i]];  
+    }
+    return result
   }
 
 // DOM-ФУНКЦИИ (создание элементов)
@@ -156,8 +191,9 @@ function createArrayCard(name, arr, parentContainer) { // функция соз�
   const inputContainer = createSwapControls(pre);
 
   const isSortedAscContainer = createIsSortedAscContainer(pre);
+  const isSortedDescContainer = createIsSortedDescContainer(pre);
   
-  card.append(title, pre, inputContainer, isSortedAscContainer);
+  card.append(title, pre, inputContainer, isSortedAscContainer, isSortedDescContainer);
   parentContainer.appendChild(card);
 
 }
@@ -206,9 +242,24 @@ function createIsSortedAscContainer(pre) {
   } else {
     result.textContent = isSorted ? 'Массив отсортирован по возрастанию' : 'Массив не отсортирован по возрастанию';
   }
-  console.log(isSorted);
   isSortedAscContainer.appendChild(result);
   return isSortedAscContainer;
+}
+
+function createIsSortedDescContainer(pre) {
+  const isSortedDescContainer = document.createElement('div');
+  isSortedDescContainer.className = 'is-sorted-desc-container';
+  isSortedDescContainer.classList.add('hidden');
+  const currentArr = JSON.parse(pre.textContent);
+  const isSorted = isSortedDesc(currentArr, compareAsc);
+  const result = document.createElement('div');
+  if (isSorted === 'Массив пуст') {
+    result.textContent = 'Массив пуст';
+  } else {
+    result.textContent = isSorted ? 'Массив отсортирован по убыванию' : 'Массив не отсортирован по убыванию';
+  }
+  isSortedDescContainer.appendChild(result);
+  return isSortedDescContainer;
 }
 
 function inputNowVisible(inputContainer) { // функция показа инпута
@@ -280,9 +331,8 @@ function handleAlgorithmChange(selectedAlgorithm) { // функция обраб
       document.querySelectorAll('.is-sorted-container').forEach(el => inputNowVisible(el));
       break;
     case 'isSortedDesc':
-      const isSortedDescResult = createResultObject(testData, isSortedAsc);
-      renderCards(isSortedDescResult, createArrayCard);
-      document.querySelectorAll('.is-sorted-container').forEach(el => inputNowVisible(el));
+      renderCards(testData, createArrayCard);
+      document.querySelectorAll('.is-sorted-desc-container').forEach(el => inputNowVisible(el));
       break;
     case 'sum':
       const sumResult = createResultObject(testData, sum);

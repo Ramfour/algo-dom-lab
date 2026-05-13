@@ -173,7 +173,168 @@ createResultObject(testData, (arr) => findMin(arr, compareAsc).value);
 
 ---
 
-## 10. Вопросы для самопроверки
+## 10. Жёсткая связь vs Dependency Injection
+
+### Жёсткая связь (tight coupling)
+
+Когда функция напрямую вызывает другую, глобальную функцию — она жёстко привязана к ней:
+
+```js
+function average(arr) {
+  if (arr.length === 0) return 0;
+  return sum(arr) / arr.length;  // жёстко завязана на глобальную sum
+}
+
+// average нельзя использовать с другой реализацией суммы
+// average нельзя протестировать с мок-функцией
+```
+
+### Dependency Injection через параметр
+
+Передаём зависимость параметром — функция становится гибкой:
+
+```js
+function average(arr, sumFn) {
+  if (arr.length === 0) return 0;
+  return sumFn(arr) / arr.length;  // работает с любой sumFn
+}
+
+// Используем с разными функциями:
+average([1, 2, 3], sum);                    // наша функция
+average([1, 2, 3], (arr) => arr.reduce(...)); // inline
+average([1, 2, 3], mockSum);                 // для тестов
+```
+
+### Параметр по умолчанию
+
+Комбинируем гибкость и удобство — значение по умолчанию:
+
+```js
+function average(arr, sumFn = sum) {
+  if (arr.length === 0) return 0;
+  return sumFn(arr) / arr.length;
+}
+
+// Можно вызвать без параметра — используется дефолт:
+average([1, 2, 3])  // sumFn = sum
+
+// Можно подменить:
+average([1, 2, 3], myCustomSum)
+```
+
+### Скрытый параметр через rest
+
+Если функция вызывается из другой функции, которая всегда передаёт лишний аргумент:
+
+```js
+// createResultObject всегда передаёт compareAsc вторым аргументом
+result[name] = callback(arr, compareAsc);
+
+// average может игнорировать его:
+function average(arr, ...args) {
+  const sumFn = args[0] || sum;  // args[0] это compareAsc, берём дефолт sum
+  if (arr.length === 0) return 0;
+  return sumFn(arr) / arr.length;
+}
+```
+
+**Почему это работает:** `args` — массив всех аргументов после `arr`. `args[0]` — это `compareAsc`, но мы его игнорируем и берём `sum` по умолчанию.
+
+### Правило большого пальца
+
+| Ситуация | Подход |
+|----------|--------|
+| Внутренние связанные функции в одном модуле | Жёсткая связь — проще читать |
+| Функция может понадобиться с разными реализациями | Dependency injection |
+| Публичное API, библиотека | Dependency injection + дефолты |
+| Тестирование (юнит-тесты) | Dependency injection — обязательно |
+
+---
+
+## 11. Задания для практики
+
+**Задание 1: Сделать average гибкой**
+
+Перепиши `average` так, чтобы она принимала функцию суммирования параметром с дефолтом:
+
+```js
+function average(arr, sumFn = sum) {
+  // твой код
+}
+```
+
+Проверь, что работает:
+- `average([1, 2, 3])` — использует глобальную `sum`
+- `average([1, 2, 3], (arr) => arr.reduce(...))` — использует переданную функцию
+
+---
+
+**Задание 2: Функция product (произведение)**
+
+Напиши функцию `product(arr, multiplyFn)`, которая перемножает все числа в массиве.
+
+```js
+// multiplyFn по умолчанию: (arr) => arr.reduce((acc, n) => acc * n, 1)
+product([2, 3, 4])        // 24
+product([2, 3, 4], myMul) // может быть другой результат
+```
+
+---
+
+**Задание 3: Максимум с кастомным сравнением**
+
+`findMax` использует `compare`. Сделай версию, которая по умолчанию ищет максимум, но может искать "максимум по модулю":
+
+```js
+function flexibleMax(arr, keyFn = (x) => x) {
+  // keyFn преобразует элемент перед сравнением
+  // по умолчанию: keyFn(5) === 5
+  // для модуля: keyFn(-10) === 10
+}
+
+flexibleMax([1, -5, 3])              // -5 (обычный максимум)
+flexibleMax([1, -5, 3], Math.abs)    // -5 (максимум по модулю, это -5, модуль 10)
+```
+
+---
+
+**Задание 4: compose — композиция функций**
+
+Напиши функцию `compose`, которая принимает две функции и возвращает новую:
+
+```js
+const double = (x) => x * 2;
+const addOne = (x) => x + 1;
+
+const doubleThenAddOne = compose(addOne, double);
+// doubleThenAddOne(5) → double(5)=10 → addOne(10)=11 → 11
+
+doubleThenAddOne(5)  // 11
+```
+
+**Подсказка:** `compose(f, g)` возвращает функцию `(x) => f(g(x))`
+
+---
+
+**Задание 5: pipe — цепочка обработки**
+
+Напиши функцию `pipe`, которая принимает массив функций и применяет их последовательно:
+
+```js
+const steps = [
+  (arr) => arr.filter(x => x > 0),  // убрать отрицательные
+  (arr) => arr.map(x => x * 2),     // удвоить
+  (arr) => arr.reduce((a, b) => a + b, 0)  // сложить
+];
+
+pipe([-1, 2, -3, 4], steps)  // 2*2 + 4*2 = 12
+```
+
+**Подсказка:** используй `reduce` для прохода по массиву функций.
+
+---
+
+## 12. Вопросы для самопроверки
 
 1. Чем отличается `doSomething(findMin)` от `doSomething(() => findMin())`?
 2. Что вернёт `(arr) => findMin(arr, compareAsc)` если убрать `.value`?
