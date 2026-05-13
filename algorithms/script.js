@@ -267,7 +267,7 @@ function handleAlgorithmChange(selectedAlgorithm) { // функция обраб
       break;
     case 'findMaxIndex':
       const maxIndexResult = createResultObject(testData, (arr) => findMax(arr, compareAsc).index);
-      renderCards(maxIndexResult, renderCards);
+      renderCards(maxIndexResult, createArrayCard);
       break;
     case 'swap':
       renderCards(testData, createArrayCard); // сначала рендерим карточки с массивами
@@ -313,7 +313,7 @@ function handleAlgorithmChange(selectedAlgorithm) { // функция обраб
 
 // ИНИЦИАЛИЗАЦИЯ
 createAlgorithmSelector(algorithmSelector, algorithms); // создаем селектор с алгоритмами
-renderCards(testData); // рендерим карточки с массивами
+renderCards(testData, createArrayCard); // рендерим карточки с массивами
 
 algorithmSelector.addEventListener('change', (event) => { // добавляем обработчик события изменения селектора
   const selectedAlgorithm = event.target.value;
