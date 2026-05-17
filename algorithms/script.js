@@ -1,24 +1,3 @@
-/* ## Этап 1. База массивов и индексов
-
-Задания:
-1. Напиши `findMin(arr)` — принимает массив чисел, возвращает наименьшее число.
-2. Напиши `findMax(arr)` — принимает массив чисел, возвращает наибольшее число.
-3. Напиши `findMinIndex(arr)` — принимает массив чисел, возвращает индекс наименьшего 
-элемента.
-4. Напиши `findMaxIndex(arr)` — принимает массив чисел, возвращает индекс наибольшего 
-элемента.
-5. Напиши `swap(arr, i, j)` — принимает массив и два индекса, меняет элементы на этих 
-позициях местами, возвращает изменённый массив.
-6. Напиши `isSortedAsc(arr)` — принимает массив чисел, возвращает `true`, если каждый 
-следующий элемент больше или равен предыдущему, иначе `false`.
-7. Напиши `isSortedDesc(arr)` — принимает массив чисел, возвращает `true`, если каждый 
-следующий элемент меньше или равен предыдущему, иначе `false`.
-8. Напиши `sum(arr)` — принимает массив чисел, возвращает их сумму.
-9. Напиши `average(arr)` — принимает массив чисел, возвращает среднее арифметическое.
-10. Напиши `reverseArray(arr)` без `reverse()` — принимает массив, возвращает новый 
-массив с элементами в обратном порядке.
-*/
-
 // DOM ЭЛЕМЕНТЫ
 const container = document.querySelector('.tasks-container');
 const algorithmSelector = document.querySelector('.algorithm-selector');
@@ -34,26 +13,44 @@ const testData = {
   numbers6: [3, 3, 1, 2, 2],
 };
 
-const algorithms = [
-  'Выберите алгоритм',
-  'findMin',
-  'findMax',
-  'findMinIndex',
-  'findMaxIndex',
-  'swap',
-  'isSortedAsc',
-  'isSortedDesc',
-  'sum',
-  'average',
-  'reverseArray',
-  'Bubble Sort',
-  'Selection Sort',
-  'Insertion Sort',
+const fruitsData = {
+  mango:  { kind: 'Манго', color: 'желтый', weight: 10},
+  kiwi:   { kind: 'Киви', color: 'зеленый', weight: 5},
+  papaya: { kind: 'Папайя', color: 'оранжевый', weight: 15},
+  lychee: { kind: 'Личи', color: 'розово-красный', weight: 3},
+};
+
+const algorithmGroups = [
+  {
+    label: 'Числа',
+    options: [
+      'Выберите алгоритм',
+      'findMin', 'findMax', 'findMinIndex', 'findMaxIndex',
+      'swap', 'isSortedAsc', 'isSortedDesc', 'sum',
+      'average', 'reverseArray', 'Bubble Sort', 
+      'Selection Sort', 'Insertion Sort', 'Linear Search',
+    ],
+  },
+  {
+    label: 'Фрукты',
+    options: [
+      'Фрукты — исходные',
+      'Фрукты — по весу ↑',
+      'Фрукты — по весу ↓',
+      'Фрукты — по цвету А→Я',
+      'Фрукты — по цвету Я→А',
+    ],
+  },
 ];
 
 
-// УТИЛИТЫ
+// УТИЛИТЫ (Вспомогательные функции compare)
 const compareAsc = (a, b) => a > b;
+const compareDesc = (a, b) => a < b;
+const compareByWeightAsc = (a, b) => a.weight > b.weight;
+const compareByWeightDesc = (a, b) => a.weight < b.weight;
+const compareByColorAsc = (a, b) => a.color.localeCompare(b.color) > 0;
+const compareByColorDesc = (a, b) => b.color.localeCompare(a.color) > 0;
 
 
 // АЛГОРИТМЫ
@@ -81,8 +78,9 @@ function findMax(arr, compare) {
 
   function bubbleSort (arr, compare){
     const result = [...arr];
-    for (let i = 0, l = result.length - 1, flag = false ;  i < l; i++)
+    for (let i = 0, l = result.length - 1, flag;  i < l; i++)
       {
+        flag = false;
         for (let j = 0; j < l - i ; j++ ){
           if (compare(result[j], result[j + 1])) {
             [result[j], result[j + 1]] = [result[j + 1], result[j]];
@@ -118,35 +116,27 @@ function findMax(arr, compare) {
 
   function isSortedAsc(arr, compare){
     if (arr.length == 0) return 'Массив пуст';
-    let flag = true;
     for (let i = 0, l = arr.length - 1; i < l; i++){
-      if (compare(arr[i + 1], arr[i]) || arr[i] == arr[i + 1]) {
-        flag = true
-      }else {
-        flag = false;
-        break;
+      if (!compare(arr[i + 1], arr[i]) && arr[i] !== arr[i + 1]) {
+        return false;
       }
     }
-    return flag;
+    return true;
   }
 
   function isSortedDesc(arr, compare){
     if (arr.length == 0) return 'Массив пуст';
-    let flag = true;
     for (let i = 0, l = arr.length - 1; i < l; i++){
-      if (compare(arr[i], arr[i + 1]) || arr[i] == arr[i + 1]) {
-        flag = true
-      }else {
-        flag = false;
-        break;
+      if (!compare(arr[i], arr[i + 1]) && arr[i] !== arr[i + 1]) {
+        return false;
       }
     }
-    return flag;
+    return true;
   }
 
   function sum(arr){
     /*
-    const result = 0;
+    let result = 0;
     for (let i = 0, l = arr.length - 1; i < l; i++){
       result += arr[i]
     }
@@ -176,8 +166,44 @@ function findMax(arr, compare) {
     }
     return result
   }
+  // функция линейного поиска O(n)
+  function linearSearch(arr, target){ // arr не изменняется, поэтому не мутирует
+    let result = - 1;
+    if (arr.length == 0) return result;
+    for (let i = 0, l = arr.length - 1; i < l; i++){
+      if (arr[i] == target) {
+        result = i;
+        return result; // Можно вернуть после цикла, но я хочу до первого совпадения
+      }
+    }
+    return result;
+  }
 
 // DOM-ФУНКЦИИ (создание элементов)
+function createFruitCard(name, fruit, parentContainer) { // функция создания карточки фрукта
+  const card = document.createElement('div');
+  card.className = 'fruit-card';
+
+  const title = document.createElement('h3');
+  title.className = 'fruit-card__name';
+  title.textContent = fruit.kind;
+
+  const tags = document.createElement('div');
+  tags.className = 'fruit-card__tags';
+
+  const colorTag = document.createElement('span');
+  colorTag.className = 'fruit-card__tag';
+  colorTag.textContent = fruit.color;
+
+  const weightTag = document.createElement('span');
+  weightTag.className = 'fruit-card__tag fruit-card__tag--weight';
+  weightTag.textContent = fruit.weight + ' г';
+
+  tags.append(colorTag, weightTag);
+  card.append(title, tags);
+  parentContainer.appendChild(card);
+}
+
 function createArrayCard(name, arr, parentContainer) { // функция создания карточки массива
   const card = document.createElement('div');
   card.className = 'array-card';
@@ -251,7 +277,7 @@ function createIsSortedDescContainer(pre) {
   isSortedDescContainer.className = 'is-sorted-desc-container';
   isSortedDescContainer.classList.add('hidden');
   const currentArr = JSON.parse(pre.textContent);
-  const isSorted = isSortedDesc(currentArr, compareAsc);
+  const isSorted = isSortedDesc(currentArr, compareDesc);
   const result = document.createElement('div');
   if (isSorted === 'Массив пуст') {
     result.textContent = 'Массив пуст';
@@ -266,15 +292,20 @@ function inputNowVisible(inputContainer) { // функция показа инп
   inputContainer.classList.remove('hidden');
 }
 
-function createAlgorithmSelector(parentContainer, algorithmList) { // функция создания селекта с алгоритмами
+function createAlgorithmSelector(parentContainer, groups) { // функция создания селекта с алгоритмами
   const select = document.createElement('select');
   select.className = 'algorithm-select';
 
-  algorithmList.forEach(algorithm => {
-    const option = document.createElement('option');
-    option.value = algorithm;
-    option.textContent = algorithm;
-    select.appendChild(option);
+  groups.forEach(group => {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = group.label;
+    group.options.forEach(name => {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      optgroup.appendChild(option);
+    });
+    select.appendChild(optgroup);
   });
 
   parentContainer.appendChild(select);
@@ -282,10 +313,10 @@ function createAlgorithmSelector(parentContainer, algorithmList) { // функц
 
 
 // КОНТРОЛЛЕРЫ (связка логики и DOM)
-function createResultObject(data, callback) { // функция создает объект с результатами работы алгоритма
+function createResultObject(data, callback, arg = compareAsc) { // функция создает объект с результатами работы алгоритма
   const result = {};
   for (const [name, arr] of Object.entries(data)) {
-    result[name] = callback(arr, compareAsc);
+    result[name] = callback(arr, arg);
   }
   return result;
 }
@@ -299,70 +330,58 @@ function renderCards(data, callback) { // функция рендерит кар
   }
 }
 
+const sortFruits = (compare) => Object.fromEntries( // вспомогательная: сортирует fruitsData по компаратору
+  Object.entries(fruitsData).sort(([, a], [, b]) => compare(b, a) ? 1 : -1)
+);
+
+const algorithmHandlers = { // объект-диспетчер: ключ — название алгоритма, значение — функция-обработчик
+  'Выберите алгоритм': () => renderCards(testData, createArrayCard),
+
+  'findMin':      () => renderCards(createResultObject(testData, arr => findMin(arr, compareAsc).value), createArrayCard),
+  'findMax':      () => renderCards(createResultObject(testData, arr => findMax(arr, compareAsc).value), createArrayCard),
+  'findMinIndex': () => renderCards(createResultObject(testData, arr => findMin(arr, compareAsc).index), createArrayCard),
+  'findMaxIndex': () => renderCards(createResultObject(testData, arr => findMax(arr, compareAsc).index), createArrayCard),
+
+  'swap': () => {
+    renderCards(testData, createArrayCard);
+    document.querySelectorAll('.input-container').forEach(inputNowVisible);
+  },
+  'isSortedAsc': () => {
+    renderCards(testData, createArrayCard);
+    document.querySelectorAll('.is-sorted-container').forEach(inputNowVisible);
+  },
+  'isSortedDesc': () => {
+    renderCards(testData, createArrayCard);
+    document.querySelectorAll('.is-sorted-desc-container').forEach(inputNowVisible);
+  },
+
+  'sum':          () => renderCards(createResultObject(testData, sum), createArrayCard),
+  'average':      () => renderCards(createResultObject(testData, average), createArrayCard),
+  'reverseArray': () => renderCards(createResultObject(testData, reverseArray), createArrayCard),
+  'Bubble Sort':  () => renderCards(createResultObject(testData, bubbleSort), createArrayCard),
+  'Insertion Sort': () => renderCards(createResultObject(testData, insertionSort), createArrayCard),
+  'Selection Sort': () => { /* TODO */ },
+
+  'Linear Search': () => {
+    const target = prompt('Введите число, индекс которого надо найти');
+    renderCards(createResultObject(testData, linearSearch, target), createArrayCard);
+  },
+
+  'Фрукты — исходные':   () => renderCards(fruitsData, createFruitCard),
+  'Фрукты — по весу ↑':  () => renderCards(sortFruits(compareByWeightAsc), createFruitCard),
+  'Фрукты — по весу ↓':  () => renderCards(sortFruits(compareByWeightDesc), createFruitCard),
+  'Фрукты — по цвету А→Я': () => renderCards(sortFruits(compareByColorAsc), createFruitCard),
+  'Фрукты — по цвету Я→А': () => renderCards(sortFruits(compareByColorDesc), createFruitCard),
+};
+
 function handleAlgorithmChange(selectedAlgorithm) { // функция обрабатывает выбор алгоритма
-  switch (selectedAlgorithm) {
-    case 'Выберите алгоритм':
-      renderCards(testData, createArrayCard);
-      break;
-    case 'findMin':
-      const minResult = createResultObject(testData, (arr) => findMin(arr, compareAsc).value);
-      renderCards(minResult, createArrayCard);
-      break;
-    case 'findMax':
-      const maxResult = createResultObject(testData, (arr) => findMax(arr, compareAsc).value);
-      renderCards(maxResult, createArrayCard);
-      break;
-    case 'findMinIndex':
-      const minIndexResult = createResultObject(testData, (arr) => findMin(arr, compareAsc).index);
-      renderCards(minIndexResult, createArrayCard);
-      break;
-    case 'findMaxIndex':
-      const maxIndexResult = createResultObject(testData, (arr) => findMax(arr, compareAsc).index);
-      renderCards(maxIndexResult, createArrayCard);
-      break;
-    case 'swap':
-      renderCards(testData, createArrayCard); // сначала рендерим карточки с массивами
-      // затем делаем видимыми input элементы через forEach и функцию inputNowVisible, 
-      // обращаясь ко всем элементам с классом .input-container
-      document.querySelectorAll('.input-container').forEach(el => inputNowVisible(el)); 
-      break;
-    case 'isSortedAsc':
-      renderCards(testData, createArrayCard);
-      document.querySelectorAll('.is-sorted-container').forEach(el => inputNowVisible(el));
-      break;
-    case 'isSortedDesc':
-      renderCards(testData, createArrayCard);
-      document.querySelectorAll('.is-sorted-desc-container').forEach(el => inputNowVisible(el));
-      break;
-    case 'sum':
-      const sumResult = createResultObject(testData, sum);
-      renderCards(sumResult, createArrayCard);
-      break;
-    case 'average':
-      const averageResult = createResultObject(testData, average);
-      renderCards(averageResult, createArrayCard);
-      break;
-    case 'reverseArray':
-      const reverseArrayResult = createResultObject(testData, reverseArray);
-      renderCards(reverseArrayResult, createArrayCard);
-      break;
-    case 'Bubble Sort':
-      const bubbleResult = createResultObject(testData, bubbleSort);
-      renderCards(bubbleResult, createArrayCard);
-      break;
-    case 'Selection Sort':
-      // TODO
-      break;
-    case 'Insertion Sort':
-      const insertionResult = createResultObject(testData, insertionSort);
-      renderCards(insertionResult, createArrayCard);
-      break;
-  }
+  const handler = algorithmHandlers[selectedAlgorithm];
+  if (handler) handler();
 }
 
 
 // ИНИЦИАЛИЗАЦИЯ
-createAlgorithmSelector(algorithmSelector, algorithms); // создаем селектор с алгоритмами
+createAlgorithmSelector(algorithmSelector, algorithmGroups); // создаем селектор с алгоритмами
 renderCards(testData, createArrayCard); // рендерим карточки с массивами
 
 algorithmSelector.addEventListener('change', (event) => { // добавляем обработчик события изменения селектора
